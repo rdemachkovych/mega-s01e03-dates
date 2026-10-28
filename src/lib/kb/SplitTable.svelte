@@ -30,7 +30,7 @@
     {#each split.groups as g (g.problem)}
       <tr class:open={!tickets[g.problem]}>
         <td><code>{g.problem}</code></td>
-        <td>{g.reports.length}</td>
+        <td>{g.reports.length}{#if Object.keys(g.alsoIn).length}<sup>*</sup>{/if}</td>
         <td>{g.tenants}</td>
         <td class="small">{channels(g.channels)}</td>
         <td>{g.firstSeen} → {g.lastSeen}</td>
@@ -43,9 +43,18 @@
 </table>
 
 <p class="small">
-  {split.groups.map((g) => g.reports.length).join(' + ')} = {split.merged.length} unique reports ·
-  {split.rows} rows in the export, {split.repeats} of them repeats of the same id.
+  {split.groups.filter((g) => !Object.keys(g.alsoIn).length).map((g) => g.reports.length).join(' + ')} =
+  {split.merged.length} unique reports · {split.rows} rows in the export, {split.repeats} of them repeats of the same id.
 </p>
+
+{#each split.groups.filter((g) => Object.keys(g.alsoIn).length) as g (g.problem)}
+  {#each Object.entries(g.alsoIn) as [cause, n] (cause)}
+    <p class="small">
+      The {n} <code>{g.problem}</code> reports are counted under <code>{cause}</code> too: the desk files a report
+      by its tenant and reads it as a one-day move (<code>desk-notes.json</code>).
+    </p>
+  {/each}
+{/each}
 
 <style>
   .sum { font-size: 1.1rem; }

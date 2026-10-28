@@ -29,9 +29,11 @@ fix until you have checked which problem it shows.
 
 <SplitTable ticket={4471} {tickets} />
 
-The counts are built from `reports-4471.json` and `desk-notes.json` at render time: one id, one
-report; the tenant's locale and booking form decide `parser` or `hint` (`#lib/kb/causes`); the desk's
-`oneDayMove` list decides `one-day`. If the desk merges or re-reads reports, this table follows.
+The counts are built from `reports-4471.json` and `desk-notes.json` at render time, the way the desk
+counts in [#4471](/kb/incidents/4471): one id, one report; the tenant's locale and booking form decide
+`parser` or `hint` (`#lib/kb/causes`), and every report is counted there; the desk's `oneDayMove`
+list decides `one-day`, and those reports stay counted where they're filed. If the desk merges or
+re-reads reports, this table follows.
 
 ## The three problems
 
@@ -48,8 +50,8 @@ change.
 **`one-day` — the day moves by one, the month stays.** *"Tuesday 6 October showed as Monday."*
 *"Client in Lisbon got Tuesday. Client in Toronto got Monday. Same meeting."* No day/month swap
 can do that. It points at time zones (an invite rendered in the viewer's zone, a date stored as
-midnight UTC). The desk already read these reports this way (`oneDayMove`) and still filed them
-under the parser.
+midnight UTC). The desk already read these reports this way (`oneDayMove`); it still files them under the
+parser by tenant, so they count in both tickets until someone checks them against the fix.
 
 ## Why it was merged
 
