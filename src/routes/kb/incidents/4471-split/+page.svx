@@ -1,0 +1,69 @@
+---
+layout: runbook
+title: '#4471 split · one ticket per date problem'
+owner: rdemachkovych
+status: open
+reviewed: 2026-10-28
+signature: v1.eyJzdWIiOiI1NTkiLCJhdWQiOiJjaGFsbGVuZ2U6d2hhdC1pdC1zaG93cyIsImlhdCI6MTc5MzE3NzA1NSwiZXhwIjoxNzkzMjYzNDU1fQ.0LvuKxpomdXTaUiLp25BIhdFoW2KntLmjEGYXTBht9w
+---
+
+<script>
+  import SplitTable from '#lib/kb/SplitTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/rdemachkovych/mega-s01e03-dates/issues';
+  const tickets = { parser: `${repo}/1`, hint: `${repo}/2`, 'one-day': `${repo}/3` };
+</script>
+
+[#4471](/kb/incidents/4471) says *known, one issue, one fix queued*. Its reports show more
+than one problem (the table counts them). The parser fix that is queued closes one of them; each
+problem has its own ticket now.
+
+<Callout kind="warn">
+Not one issue: one problem, one fix, one ticket each. Don't close a report from #4471 against the parser
+fix until you have checked which problem it shows.
+</Callout>
+
+## The split
+
+<SplitTable ticket={4471} {tickets} />
+
+The counts are built from `reports-4471.json` and `desk-notes.json` at render time: one id, one
+report; the tenant's locale and booking form decide `parser` or `hint` (`#lib/kb/causes`); the desk's
+`oneDayMove` list decides `one-day`. If the desk merges or re-reads reports, this table follows.
+
+## The three problems
+
+**`parser` — day and month swapped.** The shared parser reads every date month first. Our tenants
+write the day first, so 7 April comes out as 4 July. Every channel, every day-first tenant.
+*"Our 7 April reminder went out on 4 July."* This is the bug #4471 describes, and the fix that is queued.
+
+**`hint` — the booking-v3 form tells people to type month first.** Tenants on `booking-v3` show
+`MM/DD/YYYY` under the date field. Their people type what the hint says; the form reads it the
+tenant's way, day first. It reads the same as `parser` in a report, but it only comes through the
+form, only for booking-v3 tenants, and the parser fix does not touch it: the form hint has to
+change.
+
+**`one-day` — the day moves by one, the month stays.** *"Tuesday 6 October showed as Monday."*
+*"Client in Lisbon got Tuesday. Client in Toronto got Monday. Same meeting."* No day/month swap
+can do that. It points at time zones (an invite rendered in the viewer's zone, a date stored as
+midnight UTC). The desk already read these reports this way (`oneDayMove`) and still filed them
+under the parser.
+
+## Why it was merged
+
+Subjects. [Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on the subject line, and
+the three problems share the same subjects: *"Date is wrong"*, *"Wrong day on the invite"*, even
+*"Month and day swapped?"* come in for each of them. The subject says the date is wrong; the body
+and the tenant say how. Intake's tag is a guess from the reporter's browser and
+disagrees with the tenant on dozens of these reports, so it can't split them either.
+
+## For the desk
+
+- Triage a date report by **tenant and channel first**, then the body: day/month swapped through
+  a booking-v3 form is `hint`; one day off is `one-day`; any other swap is `parser`.
+- Decision 0001 stays as it is (decisions are not edited). Splitting on subject alone hid problems
+  since April; a new record should replace it.
+
+<RenderStamp {signature} />
