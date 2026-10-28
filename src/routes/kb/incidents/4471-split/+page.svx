@@ -35,6 +35,16 @@ counts in [#4471](/kb/incidents/4471): one id, one report; the tenant's locale a
 list decides `one-day`, and those reports stay counted where they're filed. If the desk merges or
 re-reads reports, this table follows.
 
+## After #4471 closed (5 October)
+
+Engineering closed #4471 with two changes: the parser now reads dd/mm for EU locales
+(`fix(dates): parse dd/mm for eu locales`), and the booking-v3 form is retired.
+
+- `parser` — **fixed**. Ticket closed.
+- `hint` — **won't fix**: the form that printed the hint is gone. Ticket closed as not planned.
+- `one-day` — **still open**. Neither change touches a date that moves by one day across time
+  zones. Its ticket stays open; reports like it after 5 October are this problem, not #4471.
+
 ## The three problems
 
 **`parser` — day and month swapped.** The shared parser reads every date month first. Our tenants
